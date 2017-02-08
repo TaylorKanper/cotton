@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cotton.dao.IMemberDao">
+    <resultMap id="memberMap" type="member">
+        <id column="id" property="id"/>
+        <result column="m_name" property="memberName"/>
+        <result column="m_phone" property="memberPhone"/>
+        <result column="m_score" property="memberScore"/>
+        <result column="m_birthday" property="memberBirthday"/>
+        <result column="m_create" property="memberCreate"/>
+        <result column="m_chance" property="chance"/>
+        <result column="m_description" property="description"/>
+        <result column="m_nick_name" property="nickName"/>
+        <result column="m_update_time" property="updateTime"/>
+        <result column="m_status" property="status"/>
+    </resultMap>
+
+    <insert id="addMember">
+        INSERT INTO
+            t_member (m_name, m_phone, m_score, m_birthday, m_chance, m_description, m_nick_name, m_update_time, m_status, m_create)
+        VALUES
+            (#{bean.memberName}, #{bean.memberPhone}, #{bean.memberScore}, #{bean.memberBirthday}, #{bean.chance},
+             #{bean.description}, #{bean.nickName}, #{bean.updateTime}, #{bean.status}, #{bean.memberCreate})
+    </insert>
+    <update id="addScore">
+        UPDATE t_member
+        SET m_score = m_score + #{s}, m_update_time = now()
+        where id = #{id}
+    </update>
+    <sql id="dynamic">
+        <if test="member.memberName!=null and member.memberName!=''">
+            AND m_name LIKE '%${member.memberName}%'
+        </if>
+        <if test="member.nickName!=null and member.nickName!=''">
+            AND m_nick_name LIKE '%${member.nickName}%'
+        </if>
+        <if test="member.memberPhone!=null and member.memberPhone!=''">
+            AND m_phone LIKE '%${member.memberPhone}%'
+        </if>
+        <if test="member.chance!=null and member.chance!=0">
+            AND m_chance = #{member.chance}
+        </if>
+        <if test="member.lowScore!=null and member.lowScore!=0">
+            <![CDATA[
+            AND m_score >= #{member.lowScore}
+            ]]>
+        </if>
+        <if test="member.highScore!=null and member.highScore!=0">
+            <![CDATA[
+            AND m_score <= #{member.highScore}
+            ]]>
+        </if>
+        <if test="member.startTime!=null">
+            <![CDATA[
+            AND m_birthday >= #{member.startTime}
+            ]]>
+        </if>
+        <if test="member.endTime!=null">
+            <![CDATA[
+            AND m_birthday <= #{member.endTime}
+            ]]>
+        </if>
+    </sql>
+
+    <update id="updateMember">
+        UPDATE t_member
+        <set>
+            <if test="member.memberName!=null and member.memberName!=''">
+                m_name = #{member.memberName},
+            </if>
+            <if test="member.memberPhone!=null and member.memberPhone!=''">
+                m_phone = #{member.memberPhone},
+            </if>
+            <if test="member.memberScore!=null">
+                m_score = #{member.memberScore},
+            </if>
+            <if test="member.memberBirthday!=null">
+                m_birthday = #{member.memberBirthday},
+            </if>
+            <if test="member.chance!=null and member.chance!=0">
+                m_chance = #{member.chance},
+            </if>
+            <if test="member.description!=null and member.description!=''">
+                m_description = #{member.description},
+            </if>
+            <if test="member.nickName!=null and member.nickName!=''">
+                m_nick_name = #{member.nickName},
+            </if>
+            m_update_time= now()
+        </set>
+        where id=#{member.id};
+    </update>
+    <update id="delMember">
+        UPDATE t_member SET m_status = -1,m_update_time=now() WHERE id in
+        <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="findByPage" resultMap="memberMap">
+        SELECT * FROM t_member WHERE m_status = 1
+        <include refid="dynamic"/>
+        ORDER BY m_score DESC limit #{start},#{end}
+    </select>
+    <select id="findTotalCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM t_member WHERE m_status = 1
+        <include refid="dynamic"/>
+    </select>
+
+    <select id="findMemberById" resultMap="memberMap">
+        SELECT * FROM  t_member WHERE id=#{id}
+    </select>
+    <select id="findMemberByPhone" resultMap="memberMap">
+        SELECT * FROM  t_member WHERE m_status = 1 AND m_phone = #{phone}
+    </select>
+    <select id="findAll" resultMap="memberMap">
+        select * from t_member WHERE m_score >= #{low} and <![CDATA[
+            m_score <= #{high}
+            ]]> ORDER BY m_score DESC ;
+    </select>
+    <select id="findAllByName" resultMap="memberMap">
+        select * from t_member WHERE m_status = 1 ORDER BY m_score DESC limit 0,200
+    </select>
+</mapper>

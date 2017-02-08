@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cotton.dao.IUserDao">
+    <resultMap id="userMap" type="user">
+        <id column="id" property="id"></id>
+        <result column="u_name" property="userName"></result>
+        <result column="u_login_name" property="loginName"></result>
+        <result column="u_password" property="passWord"></result>
+        <result column="u_phone" property="phone"></result>
+        <result column="u_entry_date" property="entryDate"></result>
+        <result column="u_status" property="status"></result>
+        <result column="u_remark" property="remark"></result>
+    </resultMap>
+    <insert id="addUser" parameterType="user">
+		INSERT INTO t_user(u_name,u_login_name,u_password,u_phone,u_entry_date,u_status,u_remark)VALUES
+		(#{userName},#{loginName},#{passWord},#{phone},#{entryDate},#{status},#{remark});
+	</insert>
+    <select id="findAllUser" resultMap="userMap">
+		select * from t_user WHERE u_status = 1;
+	</select>
+
+    <update id="delUser">
+        UPDATE t_user SET u_status=-1 WHERE id = #{id};
+    </update>
+    <update id="reUseUser">
+        UPDATE t_user SET u_status=1 WHERE id = #{id};
+    </update>
+
+    <select id="login" resultMap="userMap">
+        SELECT * from t_user WHERE u_status=1 AND u_login_name=#{userName} AND u_password=#{passWord};
+    </select>
+
+    <select id="findUserPage" resultMap="userMap">
+        SELECT * FROM  t_user where id NOT in(1,2) limit #{start},#{end};
+    </select>
+    <select id="findUserTotal" resultType="java.lang.Integer">
+        SELECT count(*) FROM t_user where id NOT in(1,2)
+    </select>
+</mapper>

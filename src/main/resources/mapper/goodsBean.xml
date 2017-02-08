@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cotton.dao.IGoodsDao">
+    <resultMap id="goodsMap" type="goods">
+        <id column="id" property="id"/>
+        <result column="g_name" property="goodsName"/>
+        <result column="g_num" property="number"/>
+        <result column="g_price" property="price"/>
+        <result column="g_descrip" property="description"/>
+        <result column="g_cost" property="cost"/>
+        <result column="g_first_sortId" property="firstSortId"/>
+        <result column="g_first_sortName" property="firstSortName"/>
+        <result column="g_second_sortId" property="secondSortId"/>
+        <result column="g_second_sortName" property="secondSortName"/>
+        <result column="g_status" property="status"/>
+        <result column="g_date" property="recordDate"/>
+        <result column="g_merchant" property="merchant"/>
+        <result column="g_update" property="updateDate"/>
+    </resultMap>
+    <sql id="dynamicSql">
+        <if test="goods.goodsName!=null">AND g_name LIKE '%${goods.goodsName}%'</if>
+        <if test="goods.merchant!=null">AND g_merchant LIKE '%${goods.merchant}%'</if>
+        <if test="goods.firstSortId!=null and goods.firstSortId!=-1">AND g_first_sortId =${goods.firstSortId}</if>
+        <if test="goods.secondSortId!=null and goods.secondSortId!=-1">AND g_second_sortId = ${goods.secondSortId}</if>
+        <if test="goods.lowPrice!=null">AND g_price >= ${goods.lowPrice}</if>
+        <if test="goods.highPrice!=null">AND <![CDATA[g_price <= ${goods.highPrice}
+
+            ]]></if>
+        <if test="goods.startTime!=null">AND <![CDATA[g_update >= #{goods.startTime}
+
+            ]]></if>
+        <if test="goods.endTime!=null">AND <![CDATA[g_update <= #{goods.endTime}
+
+            ]]></if>
+    </sql>
+    <insert id="add" parameterType="goods">
+		INSERT INTO
+		t_goods(g_name,g_num,g_price,g_descrip,g_cost,g_first_sortId,g_second_sortId,g_status,g_date,g_merchant,g_update,g_second_sortName,g_first_sortName)
+		VALUES(#{goodsName},#{number},#{price},#{description},#{cost},#{firstSortId},#{secondSortId},#{status},now(),#{merchant},now(),#{secondSortName},#{firstSortName});
+	</insert>
+
+    <select id="findByPage" resultMap="goodsMap">
+        SELECT * FROM t_goods WHERE g_status = 1
+        <include refid="dynamicSql"/>
+        ORDER BY g_price,g_update DESC;
+    </select>
+    <select id="findTotalCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM t_goods WHERE g_status = 1
+        <include refid="dynamicSql"/>;
+    </select>
+    <select id="findGoodsById" resultMap="goodsMap">
+        SELECT * FROM t_goods WHERE id=#{id}
+    </select>
+    <select id="findExistGoods" resultMap="goodsMap">
+        SELECT * FROM  t_goods WHERE g_name = #{bean.goodsName}
+        and g_price = ${bean.price} and g_first_sortId=#{bean.firstSortId}
+        and g_second_sortId = ${bean.secondSortId}
+    </select>
+
+    <update id="delGoods">
+        UPDATE t_goods SET g_status = -1,g_update=now() WHERE id IN
+        <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+    <update id="updateGoods">
+        UPDATE t_goods
+        <set>
+            <if test="goods.goodsName!=null">g_name = #{goods.goodsName},</if>
+            <if test="goods.number!=null">g_num = #{goods.number},</if>
+            <if test="goods.price!=null">g_price = #{goods.price},</if>
+            <if test="goods.description!=null">g_descrip = #{goods.description},</if>
+            <if test="goods.cost!=null">g_cost = #{goods.cost},</if>
+            <if test="goods.firstSortId!=null">g_first_sortId = #{goods.firstSortId},</if>
+            <if test="goods.firstSortName!=null">g_first_sortName = #{goods.firstSortName},</if>
+            <if test="goods.secondSortId!=null">g_second_sortId = #{goods.secondSortId},</if>
+            <if test="goods.secondSortName!=null">g_second_sortName = #{goods.secondSortName},</if>
+            <if test="goods.merchant!=null">g_merchant = #{goods.merchant},</if>
+            g_update = now()
+        </set>
+
+        WHERE id = #{goods.id}
+    </update>
+    <update id="updateNumber">
+        UPDATE t_goods
+        SET g_num = g_num + #{goods.number}, g_status = 1, g_update = now()
+        WHERE id = #{goods.id};
+    </update>
+    <update id="subtractOne">
+        update t_goods SET g_num = g_num - 1,g_update = now() WHERE id IN
+        <foreach collection="list" item="goodsBean" open="(" close=")" separator=",">
+            #{goodsBean.id}
+        </foreach>
+    </update>
+    <update id="checkNumber">
+        UPDATE t_goods
+        SET g_status = -1, g_update = now()
+        WHERE <![CDATA[t_goods.g_num <= 0
+        ]]>
+    </update>
+    <update id="subtractNum">
+        UPDATE t_goods
+        SET g_num = g_num - #{buyNumber}, g_update = now()
+        WHERE id = #{goodsId}
+    </update>
+    <update id="checKNumberStatus">
+        UPDATE t_goods
+        SET g_status = 1, g_update = now()
+        WHERE <![CDATA[t_goods.g_num >= 0
+        ]]>
+    </update>
+
+</mapper>

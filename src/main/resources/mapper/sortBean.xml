@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cotton.dao.ISortDao">
+    <resultMap id="sortMap" type="sort">
+        <id column="id" property="id"></id>
+        <result column="s_name" property="sortName"></result>
+        <result column="s_descrip" property="description"></result>
+        <result column="s_create_date" property="createDate"></result>
+        <result column="s_state" property="status"></result>
+        <result column="s_level" property="level"></result>
+        <result column="s_parent_id" property="fatherId"></result>
+        <result column="s_parent_name" property="fatherName"></result>
+    </resultMap>
+    <sql id="dynamicSql">
+        <if test="bean.sortName!=null and bean.sortName!=''">
+            AND s_name LIKE '%${bean.sortName}%'
+        </if>
+        <if test="bean.description!=null and bean.description!=''">
+            AND s_descrip LIKE '%${bean.description}%'
+        </if>
+        <if test="bean.level!=null and bean.level!=0">
+            AND s_level =${bean.level}
+        </if>
+        <if test="bean.fatherName!=null and bean.fatherName!=''">
+            AND s_parent_name LIKE '%${bean.fatherName}%'
+        </if>
+    </sql>
+    <insert id="addSort" parameterType="sort">
+        INSERT INTO  t_sort(s_name,s_descrip,s_create_date,s_state,s_level,s_parent_id,s_parent_name)VALUES
+        (#{sortName},#{description},#{createDate},#{status},#{level},#{fatherId},#{fatherName});
+    </insert>
+
+
+    <select id="findByLevel" resultMap="sortMap">
+        SELECT * FROM  t_sort WHERE s_state = 1 AND s_level = #{level};
+    </select>
+
+    <select id="findSortPage" resultMap="sortMap">
+        SELECT * FROM t_sort
+        where s_state =1
+        <include refid="dynamicSql"></include>
+        ORDER BY s_parent_id
+        limit #{page},#{rows}
+    </select>
+    <select id="findSortTotal" resultType="java.lang.Integer">
+        SELECT count(*) FROM t_sort
+        WHERE s_state =1
+        <include refid="dynamicSql"></include>
+
+    </select>
+
+    <select id="findSort" resultMap="sortMap">
+        SELECT * FROM t_sort WHERE id=#{id};
+    </select>
+
+    <select id="findByName" resultMap="sortMap">
+        SELECT * FROM  t_sort WHERE s_state =1 AND s_level=#{level} AND s_name=#{sortName};
+    </select>
+    <select id="findChild" resultMap="sortMap">
+        SELECT * FROM  t_sort WHERE s_state = 1 AND s_parent_id = #{id} order by id;
+    </select>
+    <update id="delSort">
+        UPDATE t_sort SET s_state = -1 WHERE id = #{id}
+    </update>
+    <update id="delChild">
+        UPDATE t_sort SET s_state = -1 WHERE s_parent_id = #{fatherId}
+    </update>
+
+    <update id="updateSort">
+        UPDATE t_sort SET s_name = #{sortName},s_descrip=#{description},s_parent_id=#{fatherId},s_parent_name=#{fatherName} WHERE id=#{id};
+    </update>
+</mapper>

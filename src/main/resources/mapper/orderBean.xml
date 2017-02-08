@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cotton.dao.IBuyDao">
+    <resultMap id="orderMap" type="order">
+        <id column="id" property="id"/>
+        <result column="o_goods_id" property="goodsId"/>
+        <result column="o_member_name" property="memberName"/>
+        <result column="o_buy_date" property="buyDate"/>
+        <result column="o_member_phone" property="memberPhone"/>
+        <result column="o_goods_secondId" property="secondId"/>
+        <result column="o_num" property="num"/>
+        <result column="o_price" property="price"/>
+        <result column="o_discount" property="discount"/>
+        <result column="o_member_id" property="memberId"/>
+        <result column="o_goods_firstId" property="firstId"/>
+        <result column="o_goods_name" property="goodsName"/>
+    </resultMap>
+    <insert id="addOrders">
+        INSERT INTO
+        t_order(o_goods_id,o_member_name,o_buy_date,o_member_phone,o_goods_secondId,o_num,o_price,o_discount,o_member_id,o_goods_firstId,o_goods_name)
+        VALUES
+        <foreach collection="list" item="orderBean" separator=",">
+            (#{orderBean.goodsId},#{orderBean.memberName},now(),#{orderBean.memberPhone},#{orderBean.secondId},#{orderBean.num},#{orderBean.price},#{orderBean.discount},#{orderBean.memberId},#{orderBean.firstId},#{orderBean.goodsName})
+        </foreach>
+    </insert>
+
+    <insert id="addOrder">
+        INSERT INTO t_order(o_goods_id,o_member_name,o_buy_date,o_member_phone,o_goods_secondId,o_num,o_price,o_discount,o_member_id,o_goods_firstId,o_goods_name)
+        VALUES(#{orderBean.goodsId},#{orderBean.memberName},now(),#{orderBean.memberPhone},#{orderBean.secondId},#{orderBean.num},#{orderBean.price},#{orderBean.discount},#{orderBean.memberId},#{orderBean.firstId},#{orderBean.goodsName})
+    </insert>
+
+</mapper>
