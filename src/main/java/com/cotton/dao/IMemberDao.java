@@ -85,5 +85,12 @@ public interface IMemberDao {
      * @param id
      * @param s
      */
-    void addScore(@Param("id") Integer id, @Param("s") int s);
+    void addScore(@Param("id") int id, @Param("s") int s);
+
+    /**
+     * 为会员减少积分
+     * @param id
+     * @param score
+     */
+    void reduceScore(@Param("id") int id, @Param("score") int score);
 }

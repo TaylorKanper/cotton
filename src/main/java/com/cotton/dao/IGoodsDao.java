@@ -94,7 +94,6 @@ public interface IGoodsDao {
      */
     void checKNumberStatus();
 
-
     /**
      * 商品减少相应的数量
      * @param bean

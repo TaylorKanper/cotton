@@ -29,6 +29,11 @@
         SET m_score = m_score + #{s}, m_update_time = now()
         where id = #{id}
     </update>
+    <update id="reduceScore">
+        UPDATE t_member
+        SET m_score = m_score - #{score}, m_update_time = now()
+        where id = #{id}
+    </update>
     <sql id="dynamic">
         <if test="member.memberName!=null and member.memberName!=''">
             AND m_name LIKE '%${member.memberName}%'
@@ -98,6 +103,7 @@
             #{item}
         </foreach>
     </update>
+
 
     <select id="findByPage" resultMap="memberMap">
         SELECT * FROM t_member WHERE m_status = 1

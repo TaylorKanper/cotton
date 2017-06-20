@@ -17,6 +17,21 @@
         <result column="o_goods_firstId" property="firstId"/>
         <result column="o_goods_name" property="goodsName"/>
     </resultMap>
+
+    <sql id="dynamicSql">
+        <if test="orderBean.memberPhone!=null">
+            AND o_member_phone LIKE '%${orderBean.memberPhone}%'
+        </if>
+        <if test="orderBean.firstId!=null and orderBean.firstId!=-1">
+            AND o_goods_firstId = #{orderBean.firstId}
+        </if>
+        <if test="orderBean.secondId!=null and orderBean.secondId!=-1">
+            AND o_goods_secondId = #{orderBean.secondId}
+        </if>
+        <if test="orderBean.buyDate!=null">
+            AND TO_DAYS(o_buy_date) = TO_DAYS(#{orderBean.buyDate})
+        </if>
+    </sql>
     <insert id="addOrders">
         INSERT INTO
         t_order(o_goods_id,o_member_name,o_buy_date,o_member_phone,o_goods_secondId,o_num,o_price,o_discount,o_member_id,o_goods_firstId,o_goods_name)
@@ -30,5 +45,12 @@
         INSERT INTO t_order(o_goods_id,o_member_name,o_buy_date,o_member_phone,o_goods_secondId,o_num,o_price,o_discount,o_member_id,o_goods_firstId,o_goods_name)
         VALUES(#{orderBean.goodsId},#{orderBean.memberName},now(),#{orderBean.memberPhone},#{orderBean.secondId},#{orderBean.num},#{orderBean.price},#{orderBean.discount},#{orderBean.memberId},#{orderBean.firstId},#{orderBean.goodsName})
     </insert>
+    <delete id="delOrder">
+        DELETE FROM t_order WHERE id = #{orderBean.id}
+    </delete>
+    <select id="findAllToday" resultMap="orderMap">
+        SELECT * FROM t_order WHERE 1=1
+        <include refid="dynamicSql"/>
+    </select>
 
 </mapper>
